@@ -152,12 +152,11 @@ hr.sep{border:none;border-top:2px solid var(--silver);margin:18px 0}
 </div>
 
 <div class="card">
-<h2>Product Presentation - one choice, never both</h2>
+<h2>Product Presentation - one choice per run</h2>
 <div class="rule-box">
-<p style="margin-top:0">Every run picks <b>one single choice</b>, right after Mode: <b>Wearing the product</b> OR <b>Holding the product</b>. Never both.</p>
-<p><b>Wearing run:</b> every prompt ends with this exact sentence: <b>"Wearing the product, not holding it."</b></p>
-<p><b>Holding run:</b> every prompt ends with this exact sentence: <b>"Holding the product, not wearing it."</b></p>
-<p>Never show her wearing an outfit while holding that same outfit on a hanger. Reject and regenerate any image that shows both. If a video needs both, use separate scenes - holding first, wearing later - never the same shot.</p>
+<p style="margin-top:0">Every run picks <b>one single choice</b>, right after Mode - including <b>None</b> when the product is not presented. The full list of choices is on the intake form, and each choice carries its own exact prompt sentence.</p>
+<p><b>Wearing run:</b> every prompt ends with this exact sentence: <b>"Wearing the product, not holding it."</b> <b>Holding run:</b> <b>"Holding the product, not wearing it."</b> <b>Using run:</b> <b>"Using the product on camera, not just holding it."</b> A <b>None run</b> adds no presentation sentence at all.</p>
+<p>Never show her wearing an outfit while holding that same outfit on a hanger. Reject and regenerate any image that shows both in the same shot. The mixed choice uses separate scenes - holding first, wearing later - never the same shot.</p>
 <p style="margin-bottom:0">That one choice is saved on the run and shown on the Queue card and the Run in Chat card, with its exact prompt sentence.</p>
 </div>
 </div>
@@ -224,8 +223,15 @@ hr.sep{border:none;border-top:2px solid var(--silver);margin:18px 0}
 <legend>3. Product Presentation - one single choice</legend>
 <p class="small" style="margin-top:0">Wearing the product OR Holding the product. Never both. This choice is saved on the run and shown on the Queue card and the Run in Chat card.</p>
 <div class="pres-options">
+<label class="pres-opt"><input type="radio" name="in_pres" value="None" checked><span>None - product is not presented<small>No presentation sentence is added to any prompt.</small></span></label>
 <label class="pres-opt"><input type="radio" name="in_pres" value="Wearing"><span>Wearing the product<small>Every prompt ends: "Wearing the product, not holding it."</small></span></label>
 <label class="pres-opt"><input type="radio" name="in_pres" value="Holding"><span>Holding the product<small>Every prompt ends: "Holding the product, not wearing it."</small></span></label>
+<label class="pres-opt"><input type="radio" name="in_pres" value="Using"><span>Using the product<small>Every prompt ends: "Using the product on camera, not just holding it."</small></span></label>
+<label class="pres-opt"><input type="radio" name="in_pres" value="CloseUp"><span>Showing it close to camera<small>Every prompt ends: "Showing the product close to camera."</small></span></label>
+<label class="pres-opt"><input type="radio" name="in_pres" value="BesideHer"><span>Sitting beside her in frame<small>Every prompt ends: "The product sits beside her in frame - she is not holding it or wearing it."</small></span></label>
+<label class="pres-opt"><input type="radio" name="in_pres" value="Unboxing"><span>Unboxing / opening it<small>Every prompt ends: "Unboxing the product on camera."</small></span></label>
+<label class="pres-opt"><input type="radio" name="in_pres" value="ByFace"><span>Holding it up by her face<small>Every prompt ends: "Holding the product up beside her face."</small></span></label>
+<label class="pres-opt"><input type="radio" name="in_pres" value="MixedScenes"><span>Holding in some scenes, wearing in others<small>Every prompt ends: "Holding the product in some scenes and wearing it in others - never both in the same shot."</small></span></label>
 </div>
 </fieldset>
 
@@ -354,8 +360,8 @@ try{var saved=localStorage.getItem(LS_KEY); if(saved){var p=JSON.parse(saved); i
 function save(){try{localStorage.setItem(LS_KEY,JSON.stringify(state));}catch(e){}}
 function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
 function uid(){return "id"+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
-function presSentence(p){if(p==="Wearing")return "Wearing the product, not holding it."; if(p==="Holding")return "Holding the product, not wearing it."; return "";}
-function presLabel(p){if(p==="Wearing")return "Wearing the product"; if(p==="Holding")return "Holding the product"; return "Not set";}
+function presSentence(p){ if(p==="Wearing")return "Wearing the product, not holding it."; if(p==="Holding")return "Holding the product, not wearing it."; if(p==="Using")return "Using the product on camera, not just holding it."; if(p==="CloseUp")return "Showing the product close to camera."; if(p==="BesideHer")return "The product sits beside her in frame - she is not holding it or wearing it."; if(p==="Unboxing")return "Unboxing the product on camera."; if(p==="ByFace")return "Holding the product up beside her face."; if(p==="MixedScenes")return "Holding the product in some scenes and wearing it in others - never both in the same shot."; return "";}
+function presLabel(p){ if(p==="None")return "None - product is not presented"; if(p==="Wearing")return "Wearing the product"; if(p==="Holding")return "Holding the product"; if(p==="Using")return "Using the product"; if(p==="CloseUp")return "Showing it close to camera"; if(p==="BesideHer")return "Sitting beside her in frame"; if(p==="Unboxing")return "Unboxing / opening it"; if(p==="ByFace")return "Holding it up by her face"; if(p==="MixedScenes")return "Holding in some scenes, wearing in others"; return "Not set";}
 function findChar(id){for(var i=0;i<state.characters.length;i++){if(state.characters[i].id===id)return state.characters[i];}return null;}
 function charLabel(c){return c?("Character "+c.letter+" - "+c.name):"No character picked";}
 function isLocked(c){return !!(c&&c.slot1&&c.slot2);}
@@ -374,6 +380,7 @@ function populateModes(){
 document.querySelectorAll(".mode-select").forEach(function(sel){
 var cur=sel.value; sel.innerHTML="";
 var o=document.createElement("option"); o.value=""; o.textContent="Choose a mode..."; sel.appendChild(o);
+var oN=document.createElement("option"); oN.value="None"; oN.textContent="None"; sel.appendChild(oN);
 MODES.forEach(function(m){var op=document.createElement("option"); op.value=m; op.textContent=m; sel.appendChild(op);});
 if(cur)sel.value=cur;
 });
@@ -507,9 +514,9 @@ return ["THE WORKFLOW:",
 "6. Export and return the video IN CHAT for my approval. Never post, publish, or share it."].join("\n");
 }
 function rulesText(p){
-return ["PRODUCT PRESENTATION - either/or, never both:",
+return ["PRODUCT PRESENTATION - one choice per run:",
 "Product Presentation choice: "+presLabel(p),
-"Exact prompt sentence: \""+presSentence(p)+"\"",
+(presSentence(p)?"Exact prompt sentence: \""+presSentence(p)+"\"":"No presentation sentence - the product is not presented on this run."),
 "Every scene prompt ends with that exact sentence. A Wearing run ends \"Wearing the product, not holding it.\" A Holding run ends \"Holding the product, not wearing it.\" Never show her wearing an outfit while holding that same outfit on a hanger. Reject and regenerate any image that shows both. If a video needs both, use separate scenes - holding first, wearing later - never the same shot.",
 "",
 "THE SCENE PROMPT SHAPE - use this for every scene, and nothing else about her:",
@@ -532,7 +539,7 @@ lines.push("Character locked: "+(isLocked(c)?"Yes - both slots filled":"No - a c
 lines.push("Voice: "+((c&&c.voice)||run.voice||"-"));
 lines.push("Mode: "+(run.mode||"-"));
 lines.push("Product Presentation: "+presLabel(run.presentation));
-lines.push("Exact prompt sentence: \""+presSentence(run.presentation)+"\"");
+lines.push(presSentence(run.presentation)?"Exact prompt sentence: \""+presSentence(run.presentation)+"\"":"No presentation sentence - the product is not presented on this run.");
 lines.push("Topic: "+(run.topic||"-"));
 lines.push("Length: "+(run.length||"-"));
 lines.push("Product: "+(run.productName||"-"));
@@ -616,8 +623,15 @@ h+='<div class="msg solo-msg"></div>';
 h+='<label class="field">Locked character<select class="char-select solo-character"></select></label>';
 h+='<label class="field">Mode<select class="mode-select solo-mode"></select></label>';
 h+='<fieldset><legend>Product Presentation - one single choice'+(needPres?" (required for this agent)":"")+'</legend><div class="pres-options">';
-h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="Wearing"><span>Wearing the product<small>Every prompt ends: "Wearing the product, not holding it."</small></span></label>';
-h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="Holding"><span>Holding the product<small>Every prompt ends: "Holding the product, not wearing it."</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="None" checked><span>None - product is not presented<small>No presentation sentence is added to any prompt.</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="Wearing"><span>Wearing the product<small>Every prompt ends: \"Wearing the product, not holding it.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="Holding"><span>Holding the product<small>Every prompt ends: \"Holding the product, not wearing it.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="Using"><span>Using the product<small>Every prompt ends: \"Using the product on camera, not just holding it.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="CloseUp"><span>Showing it close to camera<small>Every prompt ends: \"Showing the product close to camera.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="BesideHer"><span>Sitting beside her in frame<small>Every prompt ends: \"The product sits beside her in frame - she is not holding it or wearing it.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="Unboxing"><span>Unboxing / opening it<small>Every prompt ends: \"Unboxing the product on camera.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="ByFace"><span>Holding it up by her face<small>Every prompt ends: \"Holding the product up beside her face.\"</small></span></label>';
+h+='<label class="pres-opt"><input type="radio" name="solo_pres_'+a.id+'" value="MixedScenes"><span>Holding in some scenes, wearing in others<small>Every prompt ends: \"Holding the product in some scenes and wearing it in others - never both in the same shot.\"</small></span></label>';
 h+='</div></fieldset>';
 h+='<label class="field">Topic<input type="text" class="solo-topic" placeholder="What is this job about?"></label>';
 h+='<label class="field">Length<span class="hint">For example: 30 seconds</span><input type="text" class="solo-length" placeholder="30 seconds"></label>';
@@ -684,7 +698,7 @@ html+='<p class="kv"><b>Character:</b> '+esc(run.characterLabel||"No character p
 html+='<p class="kv"><b>Mode:</b> '+esc(run.mode||"-")+'</p>';
 if(run.presentation){
 html+='<p class="kv"><b>Product Presentation:</b> <span class="pill pres">'+esc(presLabel(run.presentation))+'</span></p>';
-html+='<p class="kv"><b>Exact prompt sentence:</b> "'+esc(presSentence(run.presentation))+'"</p>';
+html+='<p class="kv"><b>Exact prompt sentence:</b> '+(presSentence(run.presentation)?'"'+esc(presSentence(run.presentation))+'"':"None - the product is not presented on this run.")+'</p>';
 }else{
 html+='<p class="kv"><b>Product Presentation:</b> Not set for this solo job</p>';
 }
@@ -737,7 +751,7 @@ html+='<p class="kv"><b>Voice:</b> '+esc((c&&c.voice)||run.voice||"-")+'</p>';
 html+='<p class="kv"><b>Mode:</b> '+esc(run.mode||"-")+'</p>';
 if(run.presentation){
 html+='<p class="kv"><b>Product Presentation:</b> <span class="pill pres">'+esc(presLabel(run.presentation))+'</span></p>';
-html+='<p class="kv"><b>Exact prompt sentence:</b> "'+esc(presSentence(run.presentation))+'"</p>';
+html+='<p class="kv"><b>Exact prompt sentence:</b> '+(presSentence(run.presentation)?'"'+esc(presSentence(run.presentation))+'"':"None - the product is not presented on this run.")+'</p>';
 }else{html+='<p class="kv"><b>Product Presentation:</b> Not set for this solo job</p>';}
 html+='<p class="kv"><b>Topic:</b> '+esc(run.topic||"-")+'</p>';
 html+='<p class="kv"><b>Length:</b> '+esc(run.length||"-")+'</p>';
